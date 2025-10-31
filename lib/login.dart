@@ -35,30 +35,48 @@ class _LoginScreenState extends State<LoginScreen>
 
     // 1. Title: Fall + Bounce + Scale
     _titleSlide = Tween<Offset>(begin: Offset(0, -3), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: Interval(0.0, 0.5, curve: Curves.bounceOut)),
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.0, 0.5, curve: Curves.bounceOut),
+      ),
     );
     _titleScale = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Interval(0.0, 0.5, curve: Curves.elasticOut)),
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.0, 0.5, curve: Curves.elasticOut),
+      ),
     );
 
     // 2. Username: Slide from Left
-    _usernameSlide = Tween<Offset>(begin: Offset(-1.5, 0), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: Interval(0.4, 0.7, curve: Curves.easeOutBack)),
-    );
+    _usernameSlide = Tween<Offset>(begin: Offset(-1.5, 0), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: Interval(0.4, 0.7, curve: Curves.easeOutBack),
+          ),
+        );
 
     // 3. Password: Slide from Right
-    _passwordSlide = Tween<Offset>(begin: Offset(1.5, 0), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: Interval(0.5, 0.8, curve: Curves.easeOutBack)),
-    );
+    _passwordSlide = Tween<Offset>(begin: Offset(1.5, 0), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: Interval(0.5, 0.8, curve: Curves.easeOutBack),
+          ),
+        );
 
     // 4. Button: Scale + Pulse
     _buttonScale = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Interval(0.7, 1.0, curve: Curves.elasticOut)),
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.7, 1.0, curve: Curves.elasticOut),
+      ),
     );
 
-  _fade = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Interval(0.3, 1.0)),
-    );
+    _fade = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Interval(0.3, 1.0)));
 
     // Start Animation
     Future.delayed(Duration(milliseconds: 400), () {
@@ -86,12 +104,8 @@ class _LoginScreenState extends State<LoginScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                 Image.asset(
-              'assets/logo.jpg', 
-              width: 150,
-              height: 100,
-            ),
-            SizedBox(height: 20),
+                Image.asset('assets/logo.jpg', width: 150, height: 100),
+                SizedBox(height: 20),
                 // 1. TITLE: Girta hua + Scale
                 SlideTransition(
                   position: _titleSlide,
@@ -106,7 +120,11 @@ class _LoginScreenState extends State<LoginScreen>
                         fontFamily: 'Montserrat',
                         letterSpacing: 1.2,
                         shadows: [
-                          Shadow(offset: Offset(0, 4), blurRadius: 10, color: Colors.black26),
+                          Shadow(
+                            offset: Offset(0, 4),
+                            blurRadius: 10,
+                            color: Colors.black26,
+                          ),
                         ],
                       ),
                     ),
@@ -145,16 +163,23 @@ class _LoginScreenState extends State<LoginScreen>
                               decoration: InputDecoration(
                                 labelText: 'Username',
                                 hintText: 'Enter your username',
-                                prefixIcon: Icon(Icons.person, color: Colors.blueGrey[700]),
+                                prefixIcon: Icon(
+                                  Icons.person,
+                                  color: Colors.blueGrey[700],
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(14),
                                   borderSide: BorderSide.none,
                                 ),
                                 filled: true,
                                 fillColor: Colors.blueGrey[50],
-                                contentPadding: EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 18,
+                                  horizontal: 16,
+                                ),
                               ),
-                              validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+                              validator: (v) =>
+                                  v!.trim().isEmpty ? 'Required' : null,
                             ),
                           ),
                           const SizedBox(height: 22),
@@ -169,18 +194,26 @@ class _LoginScreenState extends State<LoginScreen>
                               decoration: InputDecoration(
                                 labelText: 'Password',
                                 hintText: 'Enter your password',
-                                prefixIcon: Icon(Icons.lock, color: Colors.blueGrey[700]),
+                                prefixIcon: Icon(
+                                  Icons.lock,
+                                  color: Colors.blueGrey[700],
+                                ),
                                 suffixIcon: IconButton(
                                   icon: AnimatedSwitcher(
                                     duration: Duration(milliseconds: 300),
-                                    transitionBuilder: (c, a) => ScaleTransition(scale: a, child: c),
+                                    transitionBuilder: (c, a) =>
+                                        ScaleTransition(scale: a, child: c),
                                     child: Icon(
-                                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                      _obscurePassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
                                       key: ValueKey(_obscurePassword),
                                       color: Colors.blueGrey[600],
                                     ),
                                   ),
-                                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                  onPressed: () => setState(
+                                    () => _obscurePassword = !_obscurePassword,
+                                  ),
                                 ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(14),
@@ -188,7 +221,10 @@ class _LoginScreenState extends State<LoginScreen>
                                 ),
                                 filled: true,
                                 fillColor: Colors.blueGrey[50],
-                                contentPadding: EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 18,
+                                  horizontal: 16,
+                                ),
                               ),
                               validator: (v) => v!.isEmpty ? 'Required' : null,
                             ),
@@ -203,10 +239,11 @@ class _LoginScreenState extends State<LoginScreen>
                               child: ElevatedButton(
                                 onPressed: () {
                                   if (_formKey.currentState!.validate()) {
-                                    
                                     Navigator.pushReplacement(
                                       context,
-                                      MaterialPageRoute(builder: (_) => BlazeAdminDashboard()),
+                                      MaterialPageRoute(
+                                        builder: (_) => BlazeAdminDashboard(),
+                                      ),
                                     );
                                   }
                                 },
@@ -214,11 +251,22 @@ class _LoginScreenState extends State<LoginScreen>
                                   foregroundColor: Colors.white,
                                   backgroundColor: Colors.deepPurple,
                                   padding: EdgeInsets.symmetric(vertical: 18),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
                                   elevation: 8,
-                                  shadowColor: Colors.deepPurple.withOpacity(0.4),
+                                  shadowColor: Colors.deepPurple.withOpacity(
+                                    0.4,
+                                  ),
                                 ),
-                                child: Text('LOGIN', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                                child: Text(
+                                  'LOGIN',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -229,8 +277,6 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                   ),
                 ),
-
-                
               ],
             ),
           ),

@@ -14,19 +14,32 @@ class _BlazeAdminDashboardState extends State<BlazeAdminDashboard> {
   String _searchQuery = '';
   List<Map<String, dynamic>> _allCoupons = [];
   List<Map<String, dynamic>> _filteredCoupons = [];
-  final ScrollController _scrollController = ScrollController();
+
+  final TextEditingController _searchController = TextEditingController();
+
 
   @override
   void initState() {
     super.initState();
     _initializeCoupons();
+    _searchController.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
+
+
+  void _onSearchChanged() {
+  setState(() {
+    _searchQuery = _searchController.text;
+    _applySearchFilter();
+  });
+}
+
+
 
   void _initializeCoupons() {
     _allCoupons = List.generate(49, (index) {
@@ -106,23 +119,32 @@ class _BlazeAdminDashboardState extends State<BlazeAdminDashboard> {
     return colors[index % colors.length];
   }
 
-  void _applySearchFilter() {
-    setState(() {
-      if (_searchQuery.isEmpty) {
-        _filteredCoupons = List.from(_allCoupons);
-      } else {
-        final query = _searchQuery.toLowerCase();
-        _filteredCoupons = _allCoupons.where((coupon) {
-          return (coupon['name'] as String).toLowerCase().contains(query) ||
-              coupon['NO'].toString().contains(query) ||
-              (coupon['description'] as String).toLowerCase().contains(query) ||
-              (coupon['location'] as String).toLowerCase().contains(query);
-        }).toList();
-      }
-      _currentPage = 1;
-    });
-  }
+void _applySearchFilter() {
+  setState(() {
+    if (_searchQuery.isEmpty) {
+      _filteredCoupons = List.from(_allCoupons);
+      _currentPage = 1; // Reset page to 1 only when search is cleared
+    } else {
+      final query = _searchQuery.toLowerCase();
+      _filteredCoupons = _allCoupons.where((coupon) {
+        return (coupon['name'] as String).toLowerCase().contains(query) ||
+            coupon['NO'].toString().contains(query) ||
+            (coupon['description'] as String).toLowerCase().contains(query) ||
+            (coupon['location'] as String).toLowerCase().contains(query);
+      }).toList();
+      // Do NOT reset _currentPage to 1 here.
+      // Let it maintain the current page or adjust if it's out of bounds.
+    }
 
+    // Optional: Adjust current page if it's now out of bounds for the filtered list
+    final totalPages = _filteredCoupons.isEmpty ? 1 : (_filteredCoupons.length / 10).ceil();
+    if (_currentPage > totalPages && totalPages > 0) {
+      _currentPage = totalPages;
+    } else if (totalPages == 0) {
+      _currentPage = 1; // If no results, default to page 1
+    }
+  });
+}
   List<Map<String, dynamic>> get _currentCoupons {
     final start = (_currentPage - 1) * 10;
     final end = (start + 10).clamp(0, _filteredCoupons.length);
@@ -289,80 +311,95 @@ class _BlazeAdminDashboardState extends State<BlazeAdminDashboard> {
   }
 
   Widget _buildStoreContent() {
-    return SingleChildScrollView(
-      controller: _scrollController,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeaderSection(),
-          const SizedBox(height: 24),
-          _buildCouponCards(),
-          const SizedBox(height: 20),
-          _buildPagination(),
-          const SizedBox(height: 40),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeaderSection() {
-    return Row(
+    return Column( // Changed from SingleChildScrollView to Column
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Text(
-            'Stores  (${_filteredCoupons.length})',
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+        _buildHeaderAndSearchBar(), // This part will be fixed at the top
+        const SizedBox(height: 24),
+        Expanded( // This part will scroll
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildCouponCards(),
+                const SizedBox(height: 20),
+                _buildPagination(),
+                const SizedBox(height: 40),
+              ],
             ),
-          ),
-        ),
-        SizedBox(
-          width: 360,
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: 'Search stores...',
-              prefixIcon: const Icon(Icons.search, color: Colors.grey),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 16),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear, size: 20),
-                      onPressed: () {
-                        setState(() => _searchQuery = '');
-                        _applySearchFilter();
-                      },
-                    )
-                  : null,
-            ),
-            onChanged: (v) {
-              _searchQuery = v;
-              _applySearchFilter();
-            },
-          ),
-        ),
-        const SizedBox(width: 16),
-        ElevatedButton.icon(
-          onPressed: () => _showAddNewCouponDialog(context),
-          icon: const Icon(Icons.add, size: 18),
-          label: const Text('Add New Store'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.indigo,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            elevation: 3,
           ),
         ),
       ],
+    );
+  }
+
+   Widget _buildHeaderAndSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Products (${_filteredCoupons.length})',
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const Spacer(), // Pushes search and add button to the right
+              SizedBox(
+                width: 300, // Fixed width for search bar
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Search products...',
+                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, color: Colors.grey),
+                            onPressed: () {
+                              _searchController.clear();
+                              _applySearchFilter();
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 14,
+                      horizontal: 16,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              ElevatedButton.icon(
+                onPressed: () => _showAddNewCouponDialog(context),
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('Add New Product'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.indigo,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 3,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -665,14 +702,6 @@ class _BlazeAdminDashboardState extends State<BlazeAdminDashboard> {
                     });
                     _searchQuery = '';
                     _applySearchFilter();
-                  });
-
-                  Future.delayed(const Duration(milliseconds: 100), () {
-                    _scrollController.animateTo(
-                      0,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOut,
-                    );
                   });
 
                   ScaffoldMessenger.of(context).showSnackBar(
